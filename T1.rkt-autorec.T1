@@ -1,0 +1,234 @@
+#lang play
+(print-only-errors #t)
+#| P1 |#
+
+
+#| Parte A |#
+#| 
+;; <Prop> ::= ( Varp name)
+                | ( Orp <Prop> <Prop> )
+                | ( Andp <Prop> <Prop>)
+                | ( Notp <Prop>)
+|#
+;; Inductive type for representing boolean
+;; propositions
+(deftype Prop
+     (Varp name)
+     (Orp lprop rprop)
+     (Andp lprop rprop)
+     (Notp prop)
+     )
+
+(def p1 (Orp (Andp (Varp "a") (Varp "b")) (Notp (Varp "c"))))
+(def p2 (Orp (Andp (Varp "a") (Varp "a")) (Notp (Varp "a"))))
+(def p3 (Orp (Orp (Varp "a") (Varp "b")) (Notp (Varp "c"))))
+(def p4 (Andp (Andp (Varp "a") (Varp "a")) (Notp (Varp "b"))))
+(def p5 (Notp (Notp (Notp (Varp "a")))))
+#| Parte B |#
+
+;; occurrences :: Prop String -> Number
+;; given a proposition and a name (string) find
+;; how many times variables named like that
+;; appear in the proposition
+
+(define (occurrences P N)
+    (match P
+        ((Varp n) (if (equal? N n) 1 0))
+        ((Andp lp rp) (+ (occurrences lp N) (occurrences rp N)))
+        ((Orp lp rp) (+ (occurrences lp N) (occurrences rp N)))
+        ((Notp p) (occurrences p N))
+))
+
+(test (occurrences p1 "a") 1)
+(test (occurrences p2 "a") 3)
+(test (occurrences p3 "a") 1)
+(test (occurrences p3 "b") 1)
+(test (occurrences p3 "c") 1)
+(test (occurrences p4 "a") 2)
+(test (occurrences p4 "b") 1)
+(test (occurrences p5 "a") 1)
+(test (occurrences p1 "no hay") 0)
+#| Parte C |#
+
+;; vars :: Prop -> (Listof String)
+;; Gives a list with all different proposition variables's names in a proposition.
+
+(define (vars P)
+  (match P
+        ((Varp n) (list n))
+        ((Andp lp rp) (remove-duplicates (append (vars lp)(vars rp))))
+        ((Orp lp rp) (remove-duplicates (append (vars lp)(vars rp))))
+        ((Notp p) (remove-duplicates (vars p)))
+        )
+  )
+
+(test (vars p1) (list "a" "b" "c"))
+(test (vars p2) (list "a"))
+(test (vars p4) (list "a" "b"))
+
+#| Parte D |#
+
+;; pairs-list :: (Listof String) -> (Listof (Listof (Pair String Boolean)))
+;; Recursive function that creates a list of lists containing pairs of propositions with different boolean evaluation.
+(define (pairs-list lst)
+  (match lst
+    ((list) empty)
+    ((cons v h) (append (list (list (cons v #t) (cons v #f))) (pairs-list h)))
+   )
+  )
+
+
+;; permutation-of-lists :: (Listof (Listof (Pair String Boolean))) -> (Listof (Listof (Pair String Boolean)))
+;; Creates a list with lists representing every possible boolean evaluation enviroment.
+(define (permutation-of-lists lst)
+  (apply cartesian-product lst)
+ )
+
+
+;; all-environments :: (Listof String) -> (Listof (Listof (Pair String Boolean)))
+;; Creates every posible combination of proposition-boolean pairs according to different boolean propositions.
+(define (all-enviroments lst)
+  (permutation-of-lists (pairs-list lst))
+ )
+
+
+#| Parte E |#
+
+;; eval :: Prop (Listof (Pair String Boolean)) -> Boolean
+;; Evaluates a boolean proposition using recursion
+(define (eval P lst)
+  (match P
+    ((Varp p) (if (equal? (assoc p lst) #f) (error (string-append "variable " p " is not defined in environment")) (cdr (assoc p lst))))
+    ((Orp lp rp) (or (eval lp lst) (eval rp lst)))
+    ((Andp lp rp) (and (eval lp lst) (eval rp lst)))
+    ((Notp p) (not (eval p lst)))
+    )
+  )
+
+#| Parte F |#
+
+
+;; tautology? :: Prop -> Boolean
+;; Checks if a proposition is a tautology or not
+(define (tautology? P)
+  (let
+      ((props (vars P)))
+    (let ((every-env (all-enviroments props)))
+      (foldl (lambda(x y) (and x y)) #t (map (lambda (lst) (eval P lst)) every-env)))
+      )
+  )
+
+
+
+#| P2 |#
+
+#| Parte A |#
+
+;; simplify-negations :: Prop -> Prop
+;; Applies a simplification over negations in AND's and OR's distribution with De Morgan laws
+(define (simplify-negations Prop)
+  (match Prop
+      [(Notp (Andp l r)) (Orp (Notp (simplify-negations l)) (Notp (simplify-negations r)))]
+      [(Notp (Orp l r)) (Andp (Notp (simplify-negations l)) (Notp (simplify-negations r)))]
+      [(Notp (Notp p)) (simplify-negations p)]
+      [(Notp (Varp p)) (Notp (Varp p))]
+      [(Andp l r) (Andp (simplify-negations l) (simplify-negations r))]
+      [(Orp l r) (Orp (simplify-negations l) (simplify-negations r))]
+      [(Varp p) (Varp p)]
+      )
+  )
+
+
+#| Parte B |#
+
+;; distribute-and :: Prop -> Prop
+;; Applies AND distribution over a proposition following De Morgan's laws
+(define (distribute-and Prop)
+  (match Prop
+    [(Andp (Orp l r) p) (Orp (Andp l p) (Andp r p))]
+    [(Andp p (Orp l r)) (Orp (Andp p l) (Andp p r))]
+    [(Andp l r) #:when (and (not (Orp? l)) (not (Orp? r))) (Andp (distribute-and l) (distribute-and r))]
+    [(Orp l r) (Orp (distribute-and l) (distribute-and r))]
+    [(Notp p) (Notp (distribute-and p))]
+    [(Varp p) (Varp p)]
+    )
+  )
+
+#| Parte C |#
+
+;; apply-until :: (a -> a) (a a -> Boolean) -> a -> a
+;; Returns a function that applies another function f to an argument until a predicate p
+;; returns #t.
+(define (apply-until f p)
+  (letrec ([fun (lambda (x) (if (p x (f x)) (f x) (fun (f x))))]) fun)
+ )
+
+#| Parte D |#
+
+;; DNF :: Prop -> Prop
+;; Applies distribute-and and simplify-negations until Prop reaches its Disjunctive Normal Form
+(define (DNF Prop)
+  (let
+      (
+       [SN (apply-until simplify-negations equal?)]
+       [DA (apply-until distribute-and equal?)])
+      (SN (DA Prop))
+      )
+  )
+
+
+
+#| P3 |#
+
+#| Parte A |#
+
+;; fold-prop :: (String -> a) (a a -> a) (a a -> a) (a -> a) -> Prop -> a
+
+(define (fold-prop varf andf orf notf)
+  (lambda (Prop)
+    (match Prop
+      [(Varp p) (varf p)]
+      [(Andp l r) (andf ((fold-prop varf andf orf notf) l) ((fold-prop varf andf orf notf) r))]
+      [(Orp l r) (orf ((fold-prop varf andf orf notf) l) ((fold-prop varf andf orf notf) r))]
+      [(Notp p) (notf ((fold-prop varf andf orf notf) p))]
+      )
+    )
+  )
+
+
+#| Parte B |#
+
+;; occurrences-2 :: Prop String -> Number
+(define (ocurrences-2 Prop N)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (if (equal? x N) 1 0))
+          (lambda (x y) (+ x y))
+          (lambda (x y) (+ x y))
+          (lambda (x) x))]) (fun Prop))
+  )
+
+;; vars-2 :: Prop -> (Listof String)
+
+(define (vars-2 Prop)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (list x))
+          (lambda (x y) (remove-duplicates (append x y)))
+          (lambda (x y) (remove-duplicates (append x y)))
+          (lambda (x) x))]) (fun Prop))
+  )
+
+;; eval-2 :: Prop (Listof (Pair String Boolean)) -> Boolean
+(define (vars-2 Prop)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (list x))
+          (lambda (x y) (remove-duplicates (append x y)))
+          (lambda (x y) (remove-duplicates (append x y)))
+          (lambda (x) x))]) (fun Prop))
+  )
+
+;; simplify-negations-2 :: Prop -> Prop
+
+;; distribute-and-2 :: Prop -> Prop

@@ -1,0 +1,82 @@
+#lang play
+(require "T1.rkt")
+
+
+;; Parte D
+
+(def l1 (list "a" "b" "c"))
+(def l2 (list "a"))
+(def l3 (list "a" "b"))
+
+(def l4 (list (list (cons "a" #t) (cons "a" #f)) (list (cons "b" #t) (cons "b" #f)) (list (cons "c" #t) (cons "c" #f))))
+(def l5 (list (list (cons "a" #t) (cons "a" #f)) (list (cons "b" #t) (cons "b" #f)) ))
+(def l6 (list (list (cons "a" #t) (cons "a" #f))))
+
+; Test for pairs-list
+(test (pairs-list l1) (list (list (cons "a" #t) (cons "a" #f)) (list (cons "b" #t) (cons "b" #f)) (list (cons "c" #t) (cons "c" #f))))
+(test (pairs-list l2) (list (list (cons "a" #t) (cons "a" #f))))
+(test (pairs-list l3) (list (list (cons "a" #t) (cons "a" #f)) (list (cons "b" #t) (cons "b" #f)) ))
+(test (pairs-list empty) empty)
+; Test for permutation-of-lists
+(test (permutation-of-lists l5) ( list ( list (cons "a" #t) (cons "b" #t))
+( list (cons "a" #t) (cons "b" #f))
+( list (cons "a" #f) (cons "b" #t))
+( list (cons "a" #f) (cons "b" #f)))
+)
+(test (permutation-of-lists l6) ( list
+( list (cons "a" #t))
+( list (cons "a" #f)))
+)
+(test (permutation-of-lists empty) (list empty))
+; Test for all-enviroments
+(test (all-enviroments l2) ( list
+( list (cons "a" #t))
+( list (cons "a" #f)))
+)
+(test (all-enviroments l3) ( list ( list (cons "a" #t) (cons "b" #t))
+( list (cons "a" #t) (cons "b" #f))
+( list (cons "a" #f) (cons "b" #t))
+( list (cons "a" #f) (cons "b" #f)))
+)
+(test (all-enviroments empty) '(()))
+
+;; Part E
+(test (eval (Varp "a") ( list (cons "a" #t))) #t)
+(test (eval (Varp "a") ( list (cons "a" #f))) #f)
+(test (eval p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #t))) #f)
+(test (eval p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #f))) #t)
+(test/exn (eval (Varp "a") ( list )) "variable a is not defined in environment")
+
+
+;; Part F
+(def t (Orp (Orp (Varp "a") (Varp "b")) (Orp (Varp "a") (Notp (Varp "b")))))
+(def t2 (Orp (Varp "a") (Notp (Varp "a"))))
+(def t3 (Orp (Varp "a") (Notp (Varp "b"))))
+(test (tautology? t) #t)
+(test (tautology? t2) #t)
+(test (tautology? t3) #f)
+
+;Ejercicio 2
+;; Part a
+(test (simplify-negations (Notp (Notp (Varp "a")))) (Varp "a"))
+(test (simplify-negations (Notp (Andp (Varp "a") (Varp "b")))) (Orp (Notp (Varp "a")) (Notp (Varp "b"))))
+(test (simplify-negations (Notp (Orp (Varp "a") (Varp "b")))) (Andp (Notp (Varp "a")) (Notp (Varp "b"))))
+(test (simplify-negations (Notp (Orp (Notp (Varp "a")) (Varp "b")))) (Andp (Notp (Notp (Varp "a"))) (Notp (Varp "b"))))
+
+;; Part b
+(test (distribute-and (Andp (Orp (Varp "a") (Varp "b")) (Varp "c"))) (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))))
+(test (distribute-and (Andp (Varp "c") (Orp (Varp "a") (Varp "b")))) (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))))
+
+
+
+;; Part d
+(test (DNF (Andp (Orp (Varp "a") (Varp "b")) (Orp (Varp "c") (Varp "d")))) (Orp
+                                                                            (Orp (Andp (Varp "a") (Varp "c"))
+                                                                                 (Andp (Varp "a") (Varp "d")))
+                                                                            (Orp (Andp (Varp "b") (Varp "c"))
+                                                                                 (Andp (Varp "b") (Varp "d")))
+                                                                            )
+      )
+
+
+(print-only-errors #t)
