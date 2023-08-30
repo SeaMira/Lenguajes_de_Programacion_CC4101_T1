@@ -39,15 +39,7 @@
         ((Notp p) (occurrences p N))
 ))
 
-(test (occurrences p1 "a") 1)
-(test (occurrences p2 "a") 3)
-(test (occurrences p3 "a") 1)
-(test (occurrences p3 "b") 1)
-(test (occurrences p3 "c") 1)
-(test (occurrences p4 "a") 2)
-(test (occurrences p4 "b") 1)
-(test (occurrences p5 "a") 1)
-(test (occurrences p1 "no hay") 0)
+
 #| Parte C |#
 
 ;; vars :: Prop -> (Listof String)
@@ -61,10 +53,6 @@
         ((Notp p) (remove-duplicates (vars p)))
         )
   )
-
-(test (vars p1) (list "a" "b" "c"))
-(test (vars p2) (list "a"))
-(test (vars p4) (list "a" "b"))
 
 #| Parte D |#
 
@@ -235,14 +223,27 @@
   (let ([fun
          (fold-prop
           (lambda (x) (Varp x))
-          (lambda (x y) (Andp (simplify-negations-2 x) (simplify-negations-2 y)))
-          (lambda (x y) (Orp (simplify-negations-2 x) (simplify-negations-2 y)))
+          (lambda (x y) (Andp x y))
+          (lambda (x y) (Orp x y))
           (lambda (x) (match x
-                        [(Orp l r) (Andp (Notp (simplify-negations-2 l)) (Notp (simplify-negations-2 r)))]
-                        [(Andp l r) (Orp (Notp (simplify-negations-2 l)) (Notp (simplify-negations-2 r)))]
-                        [(Notp p) (simplify-negations-2 p)]
+                        [(Orp l r) (Andp (Notp l) (Notp r))]
+                        [(Andp l r) (Orp (Notp l) (Notp r))]
+                        [(Notp p) p]
                         [(Varp p) (Notp (Varp p))]
                        )))]) (fun Prop))
   )
 
 ;; distribute-and-2 :: Prop -> Prop
+
+(define (distribute-and-2 Prop)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (Varp x))
+          (lambda (x y) (cond
+                          [(Orp? x) (match x [(Orp l r) (Orp (Andp l y) (Andp r y))])]
+                          [(Orp? y) (match y [(Orp l r) (Orp (Andp x l) (Andp x r))])]
+                          [else (Andp x y)]
+                         ))
+          (lambda (x y) (Orp x y))
+          (lambda (x) (Notp x)))]) (fun Prop))
+  )

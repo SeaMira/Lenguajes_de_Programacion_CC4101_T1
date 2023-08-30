@@ -184,14 +184,78 @@
 
 ;; fold-prop :: (String -> a) (a a -> a) (a a -> a) (a -> a) -> Prop -> a
 
+(define (fold-prop varf andf orf notf)
+  (lambda (Prop)
+    (match Prop
+      [(Varp p) (varf p)]
+      [(Andp l r) (andf ((fold-prop varf andf orf notf) l) ((fold-prop varf andf orf notf) r))]
+      [(Orp l r) (orf ((fold-prop varf andf orf notf) l) ((fold-prop varf andf orf notf) r))]
+      [(Notp p) (notf ((fold-prop varf andf orf notf) p))]
+      )
+    )
+  )
+
+
 #| Parte B |#
 
 ;; occurrences-2 :: Prop String -> Number
+(define (ocurrences-2 Prop N)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (if (equal? x N) 1 0))
+          (lambda (x y) (+ x y))
+          (lambda (x y) (+ x y))
+          (lambda (x) x))]) (fun Prop))
+  )
 
 ;; vars-2 :: Prop -> (Listof String)
 
+(define (vars-2 Prop)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (list x))
+          (lambda (x y) (remove-duplicates (append x y)))
+          (lambda (x y) (remove-duplicates (append x y)))
+          (lambda (x) x))]) (fun Prop))
+  )
+
 ;; eval-2 :: Prop (Listof (Pair String Boolean)) -> Boolean
+(define (eval-2 Prop lst)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (if (equal? (assoc x lst) #f) (error (string-append "variable " x " is not defined in environment")) (cdr (assoc x lst))))
+          (lambda (x y) (and x y))
+          (lambda (x y) (or x y))
+          (lambda (x) (not x)))]) (fun Prop))
+  )
 
 ;; simplify-negations-2 :: Prop -> Prop
 
+(define (simplify-negations-2 Prop)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (Varp x))
+          (lambda (x y) (Andp x y))
+          (lambda (x y) (Orp x y))
+          (lambda (x) (match x
+                        [(Orp l r) (Andp (Notp l) (Notp r))]
+                        [(Andp l r) (Orp (Notp l) (Notp r))]
+                        [(Notp p) p]
+                        [(Varp p) (Notp (Varp p))]
+                       )))]) (fun Prop))
+  )
+
 ;; distribute-and-2 :: Prop -> Prop
+
+(define (distribute-and-2 Prop)
+  (let ([fun
+         (fold-prop
+          (lambda (x) (Varp x))
+          (lambda (x y) (cond
+                          [(Orp? x) (match x [(Orp l r) (Orp (Andp l y) (Andp r y))])]
+                          [(Orp? y) (match y [(Orp l r) (Orp (Andp x l) (Andp x r))])]
+                          [else (Andp x y)]
+                         ))
+          (lambda (x y) (Orp x y))
+          (lambda (x) (Notp x)))]) (fun Prop))
+  )
