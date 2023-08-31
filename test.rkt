@@ -1,4 +1,6 @@
 #lang play
+
+#| Sebastian Mira Pacheco - Sec 2 - 20.8577.485-k|#
 (require "T1.rkt")
 
 ;; Part B

@@ -1,5 +1,7 @@
 #lang play
 (print-only-errors #t)
+#| Sebastian Mira Pacheco - Sec 2 - 20.8577.485-k|#
+
 #| P1 |#
 
 
@@ -71,6 +73,9 @@
 (define (permutation-of-lists lst)
   (apply cartesian-product lst)
  )
+
+; apply: in this case it applies a procedure with the contents of a list as args.
+; cartesian-product: "multiplies" element-by-element of n lists of same size, obtaining every combination of groups with only one element of every list.
 
 
 ;; all-environments :: (Listof String) -> (Listof (Listof (Pair String Boolean)))
