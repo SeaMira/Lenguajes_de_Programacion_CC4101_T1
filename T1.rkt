@@ -158,9 +158,9 @@
 (define (DNF Prop)
   (let
       (
-       [SN (apply-until simplify-negations equal?)]
-       [DA (apply-until distribute-and equal?)])
-      (SN (DA Prop))
+       [SN-DA (lambda (x) (simplify-negations (distribute-and x)))]
+       )
+      ((apply-until SN-DA equal?) Prop)
       )
   )
 
@@ -171,7 +171,7 @@
 #| Parte A |#
 
 ;; fold-prop :: (String -> a) (a a -> a) (a a -> a) (a -> a) -> Prop -> a
-
+;; Captures the recursion scheme associated to Prop, running a specific function for every symbol on its grammar
 (define (fold-prop varf andf orf notf)
   (lambda (Prop)
     (match Prop
@@ -187,7 +187,8 @@
 #| Parte B |#
 
 ;; occurrences-2 :: Prop String -> Number
-(define (ocurrences-2 Prop N)
+;; Given a Proposition and a string, returns the number of appearances of that string as proposition variable's names
+(define (occurrences-2 Prop N)
   (let ([fun
          (fold-prop
           (lambda (x) (if (equal? x N) 1 0))
@@ -197,7 +198,7 @@
   )
 
 ;; vars-2 :: Prop -> (Listof String)
-
+;; Given a Proposition returns a list with every different proposition variable name
 (define (vars-2 Prop)
   (let ([fun
          (fold-prop
@@ -208,6 +209,7 @@
   )
 
 ;; eval-2 :: Prop (Listof (Pair String Boolean)) -> Boolean
+;; Given a Proposition and a list of pairs of proposition variables names with their truth values, tells if the proposition is True or False
 (define (eval-2 Prop lst)
   (let ([fun
          (fold-prop
@@ -218,7 +220,7 @@
   )
 
 ;; simplify-negations-2 :: Prop -> Prop
-
+;; Given a proposition, simplifies the "not" operations if possible on inner propositions (according to De Morgan laws) and returns a simplified proposition
 (define (simplify-negations-2 Prop)
   (let ([fun
          (fold-prop
@@ -234,7 +236,7 @@
   )
 
 ;; distribute-and-2 :: Prop -> Prop
-
+;; Given a proposition, function ditributes "and" operations over "or" operations on inner propositions (according to De Morgan laws), returning a simplified Proposition
 (define (distribute-and-2 Prop)
   (let ([fun
          (fold-prop

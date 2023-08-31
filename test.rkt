@@ -53,6 +53,17 @@
 ( list (cons "a" #f) (cons "b" #t))
 ( list (cons "a" #f) (cons "b" #f)))
 )
+(test (all-enviroments (list "a" "b" "c"))
+(list (list (cons "a" #t) (cons "b" #t) (cons "c" #t))
+      (list (cons "a" #t) (cons "b" #t) (cons "c" #f))
+      (list (cons "a" #t) (cons "b" #f) (cons "c" #t))
+      (list (cons "a" #t) (cons "b" #f) (cons "c" #f))
+      (list (cons "a" #f) (cons "b" #t) (cons "c" #t))
+      (list (cons "a" #f) (cons "b" #t) (cons "c" #f))
+      (list (cons "a" #f) (cons "b" #f) (cons "c" #t))
+      (list (cons "a" #f) (cons "b" #f) (cons "c" #f))
+ )
+      )
 (test (all-enviroments empty) '(()))
 
 ;; Part E
@@ -99,12 +110,37 @@
                                                                             )
       )
 
-(test (DNF (Notp (Orp (Andp (Notp (Varp "a")) (Varp "b")) (Notp (Varp "d"))))) ())
-
+(test (DNF (Notp (Orp (Andp (Notp (Varp "a")) (Varp "b")) (Notp (Varp "d"))))) (Orp (Andp (Varp "a") (Varp "d")) (Andp (Notp (Varp "b")) (Varp "d"))))
+(test (DNF (Notp (Orp (Notp (Orp (Notp (Varp "a")) (Varp "b"))) (Notp (Andp (Varp "c") (Notp (Varp "d"))))))) (Orp (Andp (Notp (Varp "a")) (Andp (Varp "c") (Notp (Varp "d")))) (Andp (Varp "b") (Andp (Varp "c") (Notp (Varp "d"))))))
+(test (DNF (Varp "a")) (Varp "a"))
 
 ; Exercise 3
+;; Part a
+;; Tests on the next part of the exercise
 
 ;; Part b
+; occurrences-2
+(test (occurrences-2 p1 "a") 1)
+(test (occurrences-2 p2 "a") 3)
+(test (occurrences-2 p3 "a") 1)
+(test (occurrences-2 p3 "b") 1)
+(test (occurrences-2 p3 "c") 1)
+(test (occurrences-2 p4 "a") 2)
+(test (occurrences-2 p4 "b") 1)
+(test (occurrences-2 p5 "a") 1)
+(test (occurrences-2 p1 "no hay") 0)
+
+; vars-2
+(test (vars-2 p1) (list "a" "b" "c"))
+(test (vars-2 p2) (list "a"))
+(test (vars-2 p4) (list "a" "b"))
+
+; eval-2
+(test (eval-2 (Varp "a") ( list (cons "a" #t))) #t)
+(test (eval-2 (Varp "a") ( list (cons "a" #f))) #f)
+(test (eval-2 p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #t))) #f)
+(test (eval-2 p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #f))) #t)
+(test/exn (eval (Varp "a") ( list )) "variable a is not defined in environment")
 
 ; simplify-negations-2
 (test (simplify-negations-2 (Notp (Notp (Varp "a")))) (Varp "a"))
