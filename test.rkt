@@ -3,6 +3,7 @@
 #| Sebastian Mira Pacheco - Sec 2 - 20.8577.485-k|#
 (require "T1.rkt")
 
+
 ;; Part B
 (test (occurrences p1 "a") 1)
 (test (occurrences p2 "a") 3)
@@ -142,7 +143,7 @@
 (test (eval-2 (Varp "a") ( list (cons "a" #f))) #f)
 (test (eval-2 p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #t))) #f)
 (test (eval-2 p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #f))) #t)
-(test/exn (eval (Varp "a") ( list )) "variable a is not defined in environment")
+(test/exn (eval-2 (Varp "a") ( list )) "variable a is not defined in environment")
 
 ; simplify-negations-2
 (test (simplify-negations-2 (Notp (Notp (Varp "a")))) (Varp "a"))
@@ -153,5 +154,10 @@
 ; distribute-and-2
 (test (distribute-and-2 (Andp (Orp (Varp "a") (Varp "b")) (Varp "c"))) (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))))
 (test (distribute-and-2 (Andp (Varp "c") (Orp (Varp "a") (Varp "b")))) (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))))
+(test (distribute-and-2 (Andp (Orp (Varp "a") (Varp "b")) (Varp "c"))) (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))))
+(test (distribute-and-2 (Andp (Varp "c") (Orp (Varp "a") (Varp "b")))) (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))))
+(test (distribute-and-2 (Orp (Andp (Orp (Varp "a") (Varp "b")) (Varp "c")) (Varp "d"))) (Orp (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))) (Varp "d")))
+(test (distribute-and-2 (Orp (Andp (Varp "c") (Orp (Varp "a") (Varp "b"))) (Varp "d"))) (Orp (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))) (Varp "d")))
+(test (distribute-and-2 (Notp (Andp (Varp "a") (Varp "b")))) (Notp (Andp (Varp "a") (Varp "b"))))
 
 (print-only-errors #t)
