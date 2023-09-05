@@ -70,34 +70,34 @@
 (test (all-enviroments empty) '(()))
 
 ;; Part E
-(test (eval (Varp "a") ( list (cons "a" #t))) #t)
-(test (eval (Varp "a") ( list (cons "a" #f))) #f)
+(test (eval (varp "a") ( list (cons "a" #t))) #t)
+(test (eval (varp "a") ( list (cons "a" #f))) #f)
 (test (eval p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #t))) #f)
 (test (eval p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #f))) #t)
-(test/exn (eval (Varp "a") ( list )) "variable a is not defined in environment")
+(test/exn (eval (varp "a") ( list )) "variable a is not defined in environment")
 
 
 ;; Part F
-(def t (Orp (Orp (Varp "a") (Varp "b")) (Orp (Varp "a") (Notp (Varp "b")))))
-(def t2 (Orp (Varp "a") (Notp (Varp "a"))))
-(def t3 (Orp (Varp "a") (Notp (Varp "b"))))
+(def t (orp (orp (varp "a") (varp "b")) (orp (varp "a") (notp (varp "b")))))
+(def t2 (orp (varp "a") (notp (varp "a"))))
+(def t3 (orp (varp "a") (notp (varp "b"))))
 (test (tautology? t) #t)
 (test (tautology? t2) #t)
 (test (tautology? t3) #f)
 
 ;Exercise 2
 ;; Part a
-(test (simplify-negations (Notp (Varp "a"))) (Notp (Varp "a")))
-(test (simplify-negations (Notp (Notp (Varp "a")))) (Varp "a"))
-(test (simplify-negations (Notp (Andp (Varp "a") (Varp "b")))) (Orp (Notp (Varp "a")) (Notp (Varp "b"))))
-(test (simplify-negations (Notp (Orp (Varp "a") (Varp "b")))) (Andp (Notp (Varp "a")) (Notp (Varp "b"))))
-(test (simplify-negations (Notp (Orp (Notp (Varp "a")) (Varp "b")))) (Andp (Notp (Notp (Varp "a"))) (Notp (Varp "b"))))
+(test (simplify-negations (notp (varp "a"))) (notp (varp "a")))
+(test (simplify-negations (notp (notp (varp "a")))) (varp "a"))
+(test (simplify-negations (notp (andp (varp "a") (varp "b")))) (orp (notp (varp "a")) (notp (varp "b"))))
+(test (simplify-negations (notp (orp (varp "a") (varp "b")))) (andp (notp (varp "a")) (notp (varp "b"))))
+(test (simplify-negations (notp (orp (notp (varp "a")) (varp "b")))) (andp (notp (notp (varp "a"))) (notp (varp "b"))))
 
 ;; Part b
-(test (distribute-and (Andp (Orp (Varp "a") (Varp "b")) (Varp "c"))) (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))))
-(test (distribute-and (Andp (Varp "c") (Orp (Varp "a") (Varp "b")))) (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))))
-(test (distribute-and (Orp (Andp (Orp (Varp "a") (Varp "b")) (Varp "c")) (Varp "d"))) (Orp (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))) (Varp "d")))
-(test (distribute-and (Orp (Andp (Varp "c") (Orp (Varp "a") (Varp "b"))) (Varp "d"))) (Orp (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))) (Varp "d")))
+(test (distribute-and (andp (orp (varp "a") (varp "b")) (varp "c"))) (orp (andp (varp "a") (varp "c")) (andp (varp "b") (varp "c"))))
+(test (distribute-and (andp (varp "c") (orp (varp "a") (varp "b")))) (orp (andp (varp "c") (varp "a")) (andp (varp "c") (varp "b"))))
+(test (distribute-and (orp (andp (orp (varp "a") (varp "b")) (varp "c")) (varp "d"))) (orp (orp (andp (varp "a") (varp "c")) (andp (varp "b") (varp "c"))) (varp "d")))
+(test (distribute-and (orp (andp (varp "c") (orp (varp "a") (varp "b"))) (varp "d"))) (orp (orp (andp (varp "c") (varp "a")) (andp (varp "c") (varp "b"))) (varp "d")))
 
 ;; Part c
 (test (( apply-until (lambda (x) (/ x (add1 x)))(lambda (x new-x) (<= (- x new-x) 0.1))) 1) 0.25)
@@ -105,17 +105,17 @@
 (test (( apply-until (lambda (x) (+ x 1))(lambda (x new-x) (> (+ x new-x) 100))) 10) 51) ;; adding 1 until a number plus its successor is greater than 100. Returns the successor
 
 ;; Part d
-(test (DNF (Andp (Orp (Varp "a") (Varp "b")) (Orp (Varp "c") (Varp "d")))) (Orp
-                                                                            (Orp (Andp (Varp "a") (Varp "c"))
-                                                                                 (Andp (Varp "a") (Varp "d")))
-                                                                            (Orp (Andp (Varp "b") (Varp "c"))
-                                                                                 (Andp (Varp "b") (Varp "d")))
+(test (DNF (andp (orp (varp "a") (varp "b")) (orp (varp "c") (varp "d")))) (orp
+                                                                            (orp (andp (varp "a") (varp "c"))
+                                                                                 (andp (varp "a") (varp "d")))
+                                                                            (orp (andp (varp "b") (varp "c"))
+                                                                                 (andp (varp "b") (varp "d")))
                                                                             )
       )
 
-(test (DNF (Notp (Orp (Andp (Notp (Varp "a")) (Varp "b")) (Notp (Varp "d"))))) (Orp (Andp (Varp "a") (Varp "d")) (Andp (Notp (Varp "b")) (Varp "d"))))
-(test (DNF (Notp (Orp (Notp (Orp (Notp (Varp "a")) (Varp "b"))) (Notp (Andp (Varp "c") (Notp (Varp "d"))))))) (Orp (Andp (Notp (Varp "a")) (Andp (Varp "c") (Notp (Varp "d")))) (Andp (Varp "b") (Andp (Varp "c") (Notp (Varp "d"))))))
-(test (DNF (Varp "a")) (Varp "a"))
+(test (DNF (notp (orp (andp (notp (varp "a")) (varp "b")) (notp (varp "d"))))) (orp (andp (varp "a") (varp "d")) (andp (notp (varp "b")) (varp "d"))))
+(test (DNF (notp (orp (notp (orp (notp (varp "a")) (varp "b"))) (notp (andp (varp "c") (notp (varp "d"))))))) (orp (andp (notp (varp "a")) (andp (varp "c") (notp (varp "d")))) (andp (varp "b") (andp (varp "c") (notp (varp "d"))))))
+(test (DNF (varp "a")) (varp "a"))
 
 ; Exercise 3
 ;; Part a
@@ -139,25 +139,25 @@
 (test (vars-2 p4) (list "a" "b"))
 
 ; eval-2
-(test (eval-2 (Varp "a") ( list (cons "a" #t))) #t)
-(test (eval-2 (Varp "a") ( list (cons "a" #f))) #f)
+(test (eval-2 (varp "a") ( list (cons "a" #t))) #t)
+(test (eval-2 (varp "a") ( list (cons "a" #f))) #f)
 (test (eval-2 p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #t))) #f)
 (test (eval-2 p1 (list (cons "a" #t) (cons "b" #f) (cons "c" #f))) #t)
-(test/exn (eval-2 (Varp "a") ( list )) "variable a is not defined in environment")
+(test/exn (eval-2 (varp "a") ( list )) "variable a is not defined in environment")
 
 ; simplify-negations-2
-(test (simplify-negations-2 (Notp (Notp (Varp "a")))) (Varp "a"))
-(test (simplify-negations-2 (Notp (Andp (Varp "a") (Varp "b")))) (Orp (Notp (Varp "a")) (Notp (Varp "b"))))
-(test (simplify-negations-2 (Notp (Orp (Varp "a") (Varp "b")))) (Andp (Notp (Varp "a")) (Notp (Varp "b"))))
-(test (simplify-negations-2 (Notp (Orp (Notp (Varp "a")) (Varp "b")))) (Andp (Notp (Notp (Varp "a"))) (Notp (Varp "b"))))
+(test (simplify-negations-2 (notp (notp (varp "a")))) (varp "a"))
+(test (simplify-negations-2 (notp (andp (varp "a") (varp "b")))) (orp (notp (varp "a")) (notp (varp "b"))))
+(test (simplify-negations-2 (notp (orp (varp "a") (varp "b")))) (andp (notp (varp "a")) (notp (varp "b"))))
+(test (simplify-negations-2 (notp (orp (notp (varp "a")) (varp "b")))) (andp (notp (notp (varp "a"))) (notp (varp "b"))))
 
 ; distribute-and-2
-(test (distribute-and-2 (Andp (Orp (Varp "a") (Varp "b")) (Varp "c"))) (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))))
-(test (distribute-and-2 (Andp (Varp "c") (Orp (Varp "a") (Varp "b")))) (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))))
-(test (distribute-and-2 (Andp (Orp (Varp "a") (Varp "b")) (Varp "c"))) (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))))
-(test (distribute-and-2 (Andp (Varp "c") (Orp (Varp "a") (Varp "b")))) (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))))
-(test (distribute-and-2 (Orp (Andp (Orp (Varp "a") (Varp "b")) (Varp "c")) (Varp "d"))) (Orp (Orp (Andp (Varp "a") (Varp "c")) (Andp (Varp "b") (Varp "c"))) (Varp "d")))
-(test (distribute-and-2 (Orp (Andp (Varp "c") (Orp (Varp "a") (Varp "b"))) (Varp "d"))) (Orp (Orp (Andp (Varp "c") (Varp "a")) (Andp (Varp "c") (Varp "b"))) (Varp "d")))
-(test (distribute-and-2 (Notp (Andp (Varp "a") (Varp "b")))) (Notp (Andp (Varp "a") (Varp "b"))))
+(test (distribute-and-2 (andp (orp (varp "a") (varp "b")) (varp "c"))) (orp (andp (varp "a") (varp "c")) (andp (varp "b") (varp "c"))))
+(test (distribute-and-2 (andp (varp "c") (orp (varp "a") (varp "b")))) (orp (andp (varp "c") (varp "a")) (andp (varp "c") (varp "b"))))
+(test (distribute-and-2 (andp (orp (varp "a") (varp "b")) (varp "c"))) (orp (andp (varp "a") (varp "c")) (andp (varp "b") (varp "c"))))
+(test (distribute-and-2 (andp (varp "c") (orp (varp "a") (varp "b")))) (orp (andp (varp "c") (varp "a")) (andp (varp "c") (varp "b"))))
+(test (distribute-and-2 (orp (andp (orp (varp "a") (varp "b")) (varp "c")) (varp "d"))) (orp (orp (andp (varp "a") (varp "c")) (andp (varp "b") (varp "c"))) (varp "d")))
+(test (distribute-and-2 (orp (andp (varp "c") (orp (varp "a") (varp "b"))) (varp "d"))) (orp (orp (andp (varp "c") (varp "a")) (andp (varp "c") (varp "b"))) (varp "d")))
+(test (distribute-and-2 (notp (andp (varp "a") (varp "b")))) (notp (andp (varp "a") (varp "b"))))
 
 (print-only-errors #t)

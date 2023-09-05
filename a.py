@@ -1,4 +1,3 @@
-#lang play
 (print-only-errors #t)
 #| Sebastian Mira Pacheco - Sec 2 - 20.8577.485-k|#
 
@@ -7,25 +6,25 @@
 
 #| Parte A |#
 #| 
-;; <Prop> ::= ( varp name)
-                | ( orp <Prop> <Prop> )
-                | ( andp <Prop> <Prop>)
-                | ( notp <Prop>)
+;; <Prop> ::= ( Varp name)
+                | ( Orp <Prop> <Prop> )
+                | ( Andp <Prop> <Prop>)
+                | ( Notp <Prop>)
 |#
 ;; Inductive type for representing boolean
 ;; propositions
 (deftype Prop
-     (varp name)
-     (orp lprop rprop)
-     (andp lprop rprop)
-     (notp prop)
+     (Varp name)
+     (Orp lprop rprop)
+     (Andp lprop rprop)
+     (Notp prop)
      )
 
-(def p1 (orp (andp (varp "a") (varp "b")) (notp (varp "c"))))
-(def p2 (orp (andp (varp "a") (varp "a")) (notp (varp "a"))))
-(def p3 (orp (orp (varp "a") (varp "b")) (notp (varp "c"))))
-(def p4 (andp (andp (varp "a") (varp "a")) (notp (varp "b"))))
-(def p5 (notp (notp (notp (varp "a")))))
+(def p1 (Orp (Andp (Varp "a") (Varp "b")) (Notp (Varp "c"))))
+(def p2 (Orp (Andp (Varp "a") (Varp "a")) (Notp (Varp "a"))))
+(def p3 (Orp (Orp (Varp "a") (Varp "b")) (Notp (Varp "c"))))
+(def p4 (Andp (Andp (Varp "a") (Varp "a")) (Notp (Varp "b"))))
+(def p5 (Notp (Notp (Notp (Varp "a")))))
 #| Parte B |#
 
 ;; occurrences :: Prop String -> Number
@@ -35,10 +34,10 @@
 
 (define (occurrences P N)
     (match P
-        ((varp n) (if (equal? N n) 1 0))
-        ((andp lp rp) (+ (occurrences lp N) (occurrences rp N)))
-        ((orp lp rp) (+ (occurrences lp N) (occurrences rp N)))
-        ((notp p) (occurrences p N))
+        ((Varp n) (if (equal? N n) 1 0))
+        ((Andp lp rp) (+ (occurrences lp N) (occurrences rp N)))
+        ((Orp lp rp) (+ (occurrences lp N) (occurrences rp N)))
+        ((Notp p) (occurrences p N))
 ))
 
 
@@ -49,10 +48,10 @@
 
 (define (vars P)
   (match P
-        ((varp n) (list n))
-        ((andp lp rp) (remove-duplicates (append (vars lp)(vars rp))))
-        ((orp lp rp) (remove-duplicates (append (vars lp)(vars rp))))
-        ((notp p) (remove-duplicates (vars p)))
+        ((Varp n) (list n))
+        ((Andp lp rp) (remove-duplicates (append (vars lp)(vars rp))))
+        ((Orp lp rp) (remove-duplicates (append (vars lp)(vars rp))))
+        ((Notp p) (remove-duplicates (vars p)))
         )
   )
 
@@ -91,10 +90,10 @@
 ;; Evaluates a boolean proposition using recursion
 (define (eval P lst)
   (match P
-    ((varp p) (if (equal? (assoc p lst) #f) (error (string-append "variable " p " is not defined in environment")) (cdr (assoc p lst))))
-    ((orp lp rp) (or (eval lp lst) (eval rp lst)))
-    ((andp lp rp) (and (eval lp lst) (eval rp lst)))
-    ((notp p) (not (eval p lst)))
+    ((Varp p) (if (equal? (assoc p lst) #f) (error (string-append "variable " p " is not defined in environment")) (cdr (assoc p lst))))
+    ((Orp lp rp) (or (eval lp lst) (eval rp lst)))
+    ((Andp lp rp) (and (eval lp lst) (eval rp lst)))
+    ((Notp p) (not (eval p lst)))
     )
   )
 
@@ -121,13 +120,13 @@
 ;; Applies a simplification over negations in AND's and OR's distribution with De Morgan laws
 (define (simplify-negations Prop)
   (match Prop
-      [(notp (andp l r)) (orp (notp (simplify-negations l)) (notp (simplify-negations r)))]
-      [(notp (orp l r)) (andp (notp (simplify-negations l)) (notp (simplify-negations r)))]
-      [(notp (notp p)) (simplify-negations p)]
-      [(notp (varp p)) (notp (varp p))]
-      [(andp l r) (andp (simplify-negations l) (simplify-negations r))]
-      [(orp l r) (orp (simplify-negations l) (simplify-negations r))]
-      [(varp p) (varp p)]
+      [(Notp (Andp l r)) (Orp (Notp (simplify-negations l)) (Notp (simplify-negations r)))]
+      [(Notp (Orp l r)) (Andp (Notp (simplify-negations l)) (Notp (simplify-negations r)))]
+      [(Notp (Notp p)) (simplify-negations p)]
+      [(Notp (Varp p)) (Notp (Varp p))]
+      [(Andp l r) (Andp (simplify-negations l) (simplify-negations r))]
+      [(Orp l r) (Orp (simplify-negations l) (simplify-negations r))]
+      [(Varp p) (Varp p)]
       )
   )
 
@@ -138,12 +137,12 @@
 ;; Applies AND distribution over a proposition following De Morgan's laws
 (define (distribute-and Prop)
   (match Prop
-    [(andp (orp l r) p) (orp (andp l p) (andp r p))]
-    [(andp p (orp l r)) (orp (andp p l) (andp p r))]
-    [(andp l r) #:when (and (not (orp? l)) (not (orp? r))) (andp (distribute-and l) (distribute-and r))]
-    [(orp l r) (orp (distribute-and l) (distribute-and r))]
-    [(notp p) (notp (distribute-and p))]
-    [(varp p) (varp p)]
+    [(Andp (Orp l r) p) (Orp (Andp l p) (Andp r p))]
+    [(Andp p (Orp l r)) (Orp (Andp p l) (Andp p r))]
+    [(Andp l r) #:when (and (not (Orp? l)) (not (Orp? r))) (Andp (distribute-and l) (distribute-and r))]
+    [(Orp l r) (Orp (distribute-and l) (distribute-and r))]
+    [(Notp p) (Notp (distribute-and p))]
+    [(Varp p) (Varp p)]
     )
   )
 
@@ -180,10 +179,10 @@
 (define (fold-prop varf andf orf notf)
   (lambda (Prop)
     (match Prop
-      [(varp p) (varf p)]
-      [(andp l r) (andf ((fold-prop varf andf orf notf) l) ((fold-prop varf andf orf notf) r))]
-      [(orp l r) (orf ((fold-prop varf andf orf notf) l) ((fold-prop varf andf orf notf) r))]
-      [(notp p) (notf ((fold-prop varf andf orf notf) p))]
+      [(Varp p) (varf p)]
+      [(Andp l r) (andf ((fold-prop varf andf orf notf) l) ((fold-prop varf andf orf notf) r))]
+      [(Orp l r) (orf ((fold-prop varf andf orf notf) l) ((fold-prop varf andf orf notf) r))]
+      [(Notp p) (notf ((fold-prop varf andf orf notf) p))]
       )
     )
   )
@@ -229,14 +228,14 @@
 (define (simplify-negations-2 Prop)
   (let ([fun
          (fold-prop
-          (lambda (x) (varp x))
-          (lambda (x y) (andp x y))
-          (lambda (x y) (orp x y))
+          (lambda (x) (Varp x))
+          (lambda (x y) (Andp x y))
+          (lambda (x y) (Orp x y))
           (lambda (x) (match x
-                        [(orp l r) (andp (notp l) (notp r))]
-                        [(andp l r) (orp (notp l) (notp r))]
-                        [(notp p) p]
-                        [(varp p) (notp (varp p))]
+                        [(Orp l r) (Andp (Notp l) (Notp r))]
+                        [(Andp l r) (Orp (Notp l) (Notp r))]
+                        [(Notp p) p]
+                        [(Varp p) (Notp (Varp p))]
                        )))]) (fun Prop))
   )
 
@@ -245,12 +244,12 @@
 (define (distribute-and-2 Prop)
   (let ([fun
          (fold-prop
-          (lambda (x) (varp x))
+          (lambda (x) (Varp x))
           (lambda (x y) (cond
-                          [(orp? x) (match x [(orp l r) (orp (andp l y) (andp r y))])]
-                          [(orp? y) (match y [(orp l r) (orp (andp x l) (andp x r))])]
-                          [else (andp x y)]
+                          [(Orp? x) (match x [(Orp l r) (Orp (Andp l y) (Andp r y))])]
+                          [(Orp? y) (match y [(Orp l r) (Orp (Andp x l) (Andp x r))])]
+                          [else (Andp x y)]
                          ))
-          (lambda (x y) (orp x y))
-          (lambda (x) (notp x)))]) (fun Prop))
+          (lambda (x y) (Orp x y))
+          (lambda (x) (Notp x)))]) (fun Prop))
   )
